@@ -43,6 +43,8 @@ namespace SocialNetwork.Services.Services
 
             try
             {
+
+
                 var postEntity = _mapper.Map<PostEntity>(postRequest);
                 postEntity.PostID = Guid.NewGuid().ToString();
                 postEntity.UserID = userID;
@@ -51,25 +53,36 @@ namespace SocialNetwork.Services.Services
                 {
                     throw new Exception("User not found.");
                 }
-                Console.WriteLine($"Creating Post - PostID: {postEntity.PostID}, Content: {postEntity.Content}");
-
-                await _postRepository.AddAsync(postEntity);
-                await _postRepository.SaveChangeAsync();
-
                 if (postRequest.Images != null && postRequest.Images.Count > 0)
                 {
-                    //var imageModeration = new ImageModerationService();
+                    var imageModeration = new ImageModerationService();
                     foreach (var image in postRequest.Images)
                     {
                         if (string.IsNullOrWhiteSpace(image.ImgUrl))
                         {
                             throw new ArgumentException("Image URL cannot be null or empty.");
                         }
-                        //var imageIsSafe = await imageModeration.IsImageSafeAsync(image.ImgUrl);
-                        //if (!imageIsSafe)
-                        //{
-                        //    throw new Exception("Image contains unsafe content.");
-                        //}
+                        var imageIsSafe = await imageModeration.IsImageSafeAsync(image.ImgUrl);
+                        if (!imageIsSafe)
+                        {
+
+                            //await _notificationservice.CreateSensitiveImageNotificationAsync(userID,postEntity.PostID);
+
+                            // Gửi thông báo qua SignalR đến danh sách bạn bè
+                            //await _postHubService.SendNotificationToMultipleUsers(friendToNotify, notification);
+                            var userImage = new FriendViewModel
+                            {
+                                AvatarUrl = postEntity.User.AvatarUrl,
+                                LastName = postEntity.User.LastName,
+                                FirstName = postEntity.User.FirstName,
+
+                            };
+
+                            await _postHubService.CreateImageNotificationAsync(userID, userImage);
+
+
+                            throw new Exception("Image contains unsafe content.");
+                        }
 
                         var imageEntity = _mapper.Map<ImagesOfPostEntity>(image);
 
@@ -78,45 +91,14 @@ namespace SocialNetwork.Services.Services
                     }
                 }
 
+                //Console.WriteLine($"Creating Post - PostID: {postEntity.PostID}, Content: {postEntity.Content}");
+                await _postRepository.AddAsync(postEntity);
+                await _postRepository.SaveChangeAsync();
 
                 var postResponse = _mapper.Map<PostResponse>(postEntity);
                 postResponse.FirstName = postEntity.User?.FirstName;
                 postResponse.LastName = postEntity.User?.LastName;
                 postRequest.Images = postResponse.Images;
-
-
-
-                //Friends
-                var friends = await _relationshipRepository.GetFriendIdByUserId(userID);
-
-                var friendToNotify = friends.Where(x => x != userID).ToList();
-
-                if (friends.Any())
-                {
-                    // Nội dung thông báo
-                    var content = $"{postEntity.User.FirstName} {postEntity.User.LastName} vừa đăng một bài viết mới.";
-
-
-                    var notification = new NotificationPostViewModel
-                    {
-                        Content = content,
-                        Type = "New_Post",
-                        UserId = userID,
-                        //friendId= friendToNotify,
-                        //PostId = postEntity.PostID,
-                        //CreatedAt = DateTime.UtcNow
-                    };
-
-
-                    // Tạo thông báo trong cơ sở dữ liệu
-                    await _notificationservice.CreateNotificationAsync(notification, friendToNotify);
-
-                    // Gửi thông báo qua SignalR đến danh sách bạn bè
-                    //await _postHubService.SendNotificationToMultipleUsers(friendToNotify, notification);
-                }
-
-                await _postHubService.SendPostAsync(postResponse);
-
 
                 return postResponse;
             }
@@ -134,6 +116,59 @@ namespace SocialNetwork.Services.Services
 
 
 
+        //////Friends
+        ////var friends = await _relationshipRepository.GetFriendIdByUserId(userID);
+
+        ////var friendToNotify = friends.Where(x => x != userID).ToList();
+
+        ////if (friends.Any())
+        ////{
+        ////    // Nội dung thông báo
+        ////    var content = $"{postEntity.User.FirstName} {postEntity.User.LastName} vừa đăng một bài viết mới.";
+
+
+        ////    var notification = new NotificationPostViewModel
+        ////    {
+        ////        Content = content,
+        ////        Type = "New_Post",
+        ////        UserId = userID,
+        ////        //friendId= friendToNotify,
+        ////        //PostId = postEntity.PostID,
+        ////        //CreatedAt = DateTime.UtcNow
+        ////    };
+
+
+        ////    // Tạo thông báo trong cơ sở dữ liệu
+        ////    await _notificationservice.CreateNotificationAsync(notification, friendToNotify);
+
+        ////    // Gửi thông báo qua SignalR đến danh sách bạn bè
+        ////    //await _postHubService.SendNotificationToMultipleUsers(friendToNotify, notification);
+        ////}
+
+        ////await _postHubService.SendPostAsync(postResponse);
+
+
+        ////var content = $"{postEntity.User.FirstName} {postEntity.User.LastName}  BÀI VIẾT CỦA BẠN CHỨA NHỮNG ẢNH ĐỘC HẠI. BÀI VIẾT KHÔNG ĐƯỢC ĐĂNG";
+
+
+        ////var notification = new NotificationPostViewModel
+        ////{
+        ////    Content = content,
+        ////    Type = "New_Post",
+        ////    UserId = userID,
+        ////};
+
+
+
+
+        //// Tạo thông báo trong cơ sở dữ liệu
+        //await _notificationservice.CreateSensitiveImageNotificationAsync(userID);
+
+        //// Gửi thông báo qua SignalR đến danh sách bạn bè
+        ////await _postHubService.SendNotificationToMultipleUsers(friendToNotify, notification);
+
+
+        //await _postHubService.CreateImageNotificationAsync(userID);
 
 
         public async Task<bool> DeletePostAsync(string postId)
@@ -151,7 +186,8 @@ namespace SocialNetwork.Services.Services
             var posts = await _postRepository.GetAllAsync(userId);
 
             var total = posts.Count();
-            var pagePost = posts.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
+            //var pagePost = posts.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
+            var pagePost = posts.ToList();
             var getPost = new PageResult<PostViewModel>
             {
                 CurrentPage = pageIndex,
@@ -189,14 +225,14 @@ namespace SocialNetwork.Services.Services
         public async Task<PageResult<PostViewModel>> GetPostsByUserIdAsync(string userId, int pageSize, int pageIndex)
         {
             var posts = await _postRepository.GetAllAsync(userId);
-            var userPosts = posts.Where(p => p.UserID == userId);
-            var total = posts.Count();
+            var userPosts = posts.Where(p => p.UserID == userId).ToList(); ;
+            var total = userPosts.Count();
             var pagePost = posts.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
             var getPost = new PageResult<PostViewModel>
             {
                 CurrentPage = pageIndex,
                 TotalCount = total,
-                Data = pagePost,
+                Data = userPosts,
             };
             return getPost;
         }

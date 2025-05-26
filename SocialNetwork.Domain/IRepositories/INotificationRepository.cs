@@ -8,7 +8,7 @@ namespace SocialNetwork.Domain.IRepositories
         Task AddSendFriendAsync(NotificationEntity entity);
         public Task AcceptNotificationAsync(NotificationEntity notification);
 
-
+        Task DeleteNotificationsBySenderIdAsync(string id);
         Task<IEnumerable<NotificationEntity>> GetAllFriendRequest(string userId);
         Task<NotificationEntity> FirstOrIdNotification(string id);
     }

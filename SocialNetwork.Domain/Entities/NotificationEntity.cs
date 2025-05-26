@@ -18,9 +18,11 @@
         /// <summary>
         /// type = 0 => notification message
         /// type = 1 => notification post
+        /// type=3=> notification nhạy cảm
         /// </summary>
         public int Type { get; set; }
 
+        //public string PostID {  get; set; }
         public bool IsDelete { get; set; } = false;
 
         [ForeignKey("SenderId")]

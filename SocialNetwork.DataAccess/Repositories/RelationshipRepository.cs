@@ -18,7 +18,7 @@ namespace SocialNetwork.DataAccess.Repositories
         }
 
         public async Task AccepFriendRequestAsync(string userId, string friendId)
-         {
+        {
             try
             {
                 var accUser = await _context.RequestFriends.FirstOrDefaultAsync(r => r.UserID == friendId && r.FriendID == userId);
@@ -82,11 +82,10 @@ namespace SocialNetwork.DataAccess.Repositories
                 _context.Relationships.Remove(friend2);
                 await _context.SaveChangesAsync();
             }
-            var notificationUser = await _notificationRepository.FirstOrIdNotification(friendId);
-            if (notificationUser != null)
-            {
-                _context.Notifications.Remove(notificationUser);
-            }
+            await _notificationRepository.DeleteNotificationsBySenderIdAsync(friendId);
+            await _notificationRepository.DeleteNotificationsBySenderIdAsync(userId);
+
+
         }
 
         public async Task DeclineFriendRequestAsync(string userId, string friendId)
@@ -104,11 +103,11 @@ namespace SocialNetwork.DataAccess.Repositories
                 _context.RequestFriends.Remove(friend);
                 await _context.SaveChangesAsync();
             }
-           
+
         }
         public async Task DeclineFriendAsync(string userId, string friendId)
         {
-            var friend = await _context.RequestFriends.FirstOrDefaultAsync(r => (r.UserID == friendId && r.FriendID == userId) 
+            var friend = await _context.RequestFriends.FirstOrDefaultAsync(r => (r.UserID == friendId && r.FriendID == userId)
             || (r.UserID == userId && r.FriendID == friendId));
 
             var notificationUser = await _notificationRepository.FirstOrIdNotification(friendId);

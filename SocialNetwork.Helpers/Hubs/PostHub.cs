@@ -82,7 +82,11 @@ namespace SocialNetwork.Helpers.Hubs
         }
         public async Task SendSeedSearch()
         {
-            await Clients.All.SendAsync("CancelUser");
+            await Clients.All.SendAsync("seedSearUser");
+        }
+        public async Task CreateImageNotificationAsync(string userId, FriendViewModel user)
+        {
+            await Clients.User(userId).SendAsync("ImageNotification");
         }
     }
 }

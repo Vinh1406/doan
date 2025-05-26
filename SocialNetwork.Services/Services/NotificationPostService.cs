@@ -17,19 +17,25 @@ namespace SocialNetwork.Services.Services
             _notification = notification;
         }
 
-        public async Task CreateNotificationAsync(NotificationPostViewModel model, List<string> friendId)
+        public async Task CreateSensitiveImageNotificationAsync(string userId,string postId)
         {
-            var notifications = friendId.Select(friendId => new NotificationEntity
-            {
-                Id = Guid.NewGuid().ToString(),
-                SenderId = model.UserId,
-                ReceiverId = friendId,
-                Messeage = model.Content,
-                Type = 1,
-                CreatedAt = DateTime.UtcNow
-            }).ToList();
-            await _notification.CreateNotificationAsync(notifications);
+            await _notification.CreateImageNotificationAsync(userId,postId);
+
         }
+
+        //public async Task CreateNotificationAsync(NotificationPostViewModel model, List<string> friendId)
+        //{
+        //    var notifications = friendId.Select(friendId => new NotificationEntity
+        //    {
+        //        Id = Guid.NewGuid().ToString(),
+        //        SenderId = model.UserId,
+        //        ReceiverId = friendId,
+        //        Messeage = model.Content,
+        //        Type = 1,
+        //        CreatedAt = DateTime.UtcNow
+        //    }).ToList();
+        //    await _notification.CreateNotificationAsync(notifications);
+        //}
 
         public async Task<IEnumerable<NotificationPostViewModel>> GetUserNotificationAsync(string userId)
         {

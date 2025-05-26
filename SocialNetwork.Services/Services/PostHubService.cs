@@ -106,6 +106,19 @@ namespace SocialNetwork.Services.Services
            
             await _hubContext.Clients.All.SendAsync("seedSearUser", users);
         }
+
+        public async Task CreateImageNotificationAsync(string userId, FriendViewModel user)
+        {
+            var notification = new
+            {
+                message = "Ảnh nhạy cảm đã được phát hiện. Đã tự động xóa hình khỏi bài viết. Yêu cầu chỉnh sửa lại bài đăng",
+                firstName = user.FirstName,
+                lastName = user.LastName,
+                avatarUrl=user.AvatarUrl,
+            };
+            await _hubContext.Clients.User(userId)
+           .SendAsync("ImageNotification", notification);
+        }
     }
 }
 

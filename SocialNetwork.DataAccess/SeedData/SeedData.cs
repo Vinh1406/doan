@@ -39,7 +39,7 @@ namespace SocialNetwork.DataAccess.SeedData
                         LastLogin = i <= 4 ? DateTime.UtcNow : (DateTime?)null,
                         Gender = false,
                         EmailConfirmed = true,
-                        AvatarUrl = "https://res.cloudinary.com/dlran3qvj/image/upload/v1732701622/file_1732701619587.jpg"
+                        AvatarUrl = "https://res.cloudinary.com/dlran3qvj/image/upload/v1744688997/file_1744688996883.webp"
                     };
 
                     var result = await userManager.CreateAsync(user, "ABCd123!@#");

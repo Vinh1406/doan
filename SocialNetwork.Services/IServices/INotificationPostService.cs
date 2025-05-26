@@ -9,8 +9,11 @@ namespace SocialNetwork.Services.IServices
     public interface INotificationPostService
     {
         public Task<IEnumerable<NotificationPostViewModel>> GetUserNotificationAsync(string userId);
-        public Task CreateNotificationAsync(NotificationPostViewModel notificationViewModel, List<string> friendId);
+        //public Task CreateNotificationAsync(NotificationPostViewModel notificationViewModel, List<string> friendId);
         public Task MarkNotificationAsync(string id);
+
+        Task CreateSensitiveImageNotificationAsync(string userId,string postId);
 
     }
 }
+

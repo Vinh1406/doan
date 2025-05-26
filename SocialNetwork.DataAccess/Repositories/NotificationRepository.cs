@@ -42,12 +42,30 @@ namespace SocialNetwork.DataAccess.Repositories
                 throw new Exception("fail");
             }
         }
+        //public Task DeleteNotificationAsync(string id)
+        //{
 
+        //}
         public async Task<NotificationEntity> FirstOrIdNotification(string id)
         {
             var notificationUser= await _context.Notifications.FirstOrDefaultAsync(x=>x.SenderId == id);
+
             return notificationUser;
         }
+
+        public async Task DeleteNotificationsBySenderIdAsync(string senderId)
+        {
+            var notifications = await _context.Notifications
+                .Where(x => x.SenderId == senderId)
+                .ToListAsync();
+
+            if (notifications.Any())
+            {
+                _context.Notifications.RemoveRange(notifications);
+                await _context.SaveChangesAsync();
+            }
+        }
+
 
         public async Task<IEnumerable<NotificationEntity>> GetAllFriendRequest(string userId)
         {

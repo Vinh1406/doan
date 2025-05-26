@@ -61,7 +61,7 @@ namespace SocialNetwork.Web.Controllers
         }
 
         [HttpGet("User")]
-        public async Task<ActionResult<IEnumerable<PostViewModel>>> GetPostsByUserIdAsync([FromQuery]string userId, int pageIndex, int pageSixe)
+        public async Task<ActionResult<IEnumerable<PostViewModel>>> GetPostsByUserIdAsync([FromQuery]string userId, int pageIndex=1, int pageSixe=10)
         {
             var posts = await _postService.GetPostsByUserIdAsync(userId,pageIndex,pageSixe);
             return Ok(new BaseResponse
@@ -91,37 +91,22 @@ namespace SocialNetwork.Web.Controllers
                 return BadRequest(ModelState);
             }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var createdPost = await _postService.CreatePostAsync(postViewModel, userId);
+            //var createdPost = await _postService.CreatePostAsync(postViewModel, userId);
             //await _postHubService.SendPostAsync(createdPost);
-            return CreatedAtAction(nameof(CreatePost), new { postId = createdPost.PostID }, createdPost);
+            //return CreatedAtAction(nameof(CreatePost), new { postId = createdPost.PostID }, createdPost);
+
+            try
+            {
+                var createdPost = await _postService.CreatePostAsync(postViewModel, userId);
+                return CreatedAtAction(nameof(CreatePost), new { postId = createdPost.PostID }, createdPost);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult<PostViewModel>> UpdatePost(string id, [FromBody] PostViewModel postViewModel)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    postViewModel.PostID = id;
-        //    var updatedPost = await _postService.UpdatePostAsync(postViewModel);
-
-        //    if (updatedPost == null)
-        //    {
-        //        return NotFound("Bài viết không tồn tại.");
-        //    }
-
-        //    //await _postHubService.SendUpdateAsycn(updatedPost);
-        //    return Ok(updatedPost);
-        //}
-
-       
-
-        /// <summary>
-        /// Emotion
-        /// </summary>
-        /// <returns></returns>
+      
 
         [HttpGet("AllEmotion")]
         public async Task<ActionResult<IEnumerable<EmotionRequest>>> GetAllEmotion()

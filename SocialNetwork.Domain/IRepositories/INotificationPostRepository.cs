@@ -12,5 +12,7 @@ namespace SocialNetwork.Domain.IRepositories
         public Task<IEnumerable<NotificationEntity>> GetNotificationByUserAsync(string userId);
         public Task MakeAsReadAsync(string id);
         public Task DeleteNotificationAsync(int id);
+
+        Task CreateImageNotificationAsync(string userId,string postId);
     }
 }

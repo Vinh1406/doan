@@ -33,5 +33,6 @@ namespace SocialNetwork.Services.IServices
 
         Task SendSeedSearch();
 
+        Task CreateImageNotificationAsync(string userId, FriendViewModel user);
     }
 }
